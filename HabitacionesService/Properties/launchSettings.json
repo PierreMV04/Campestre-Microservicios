@@ -1,0 +1,15 @@
+{
+  "profiles": {
+    "http": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "launchUrl": "graphql-ui",
+      "applicationUrl": "http://localhost:5002",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "RabbitMQ__Host": "localhost"
+      }
+    }
+  }
+}

@@ -1,0 +1,76 @@
+﻿services:
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+
+  catalogos:
+    build:
+      context: .
+      dockerfile: CatalogosService/Dockerfile
+    container_name: catalogos
+    ports:
+      - "5001:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Docker
+      RabbitMQ__Host: rabbitmq
+    depends_on:
+      - rabbitmq
+
+  habitaciones:
+    build:
+      context: .
+      dockerfile: HabitacionesService/Dockerfile
+    container_name: habitaciones
+    ports:
+      - "5002:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Docker
+      RabbitMQ__Host: rabbitmq
+    depends_on:
+      - rabbitmq
+
+  reservas:
+    build:
+      context: .
+      dockerfile: ReservasService/Dockerfile
+    container_name: reservas
+    ports:
+      - "5003:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Docker
+      RabbitMQ__Host: rabbitmq
+    depends_on:
+      - rabbitmq
+
+  usuarios-pagos:
+    build:
+      context: .
+      dockerfile: UsuariosPagosService/Dockerfile
+    container_name: usuarios-pagos
+    ports:
+      - "5004:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Docker
+      RabbitMQ__Host: rabbitmq
+    depends_on:
+      - rabbitmq
+
+  apigateway:
+    build:
+      context: .
+      dockerfile: ApiGateway/Dockerfile
+    container_name: apigateway
+    ports:
+      - "8080:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Docker
+      RabbitMQ__Host: rabbitmq
+    depends_on:
+      - catalogos
+      - habitaciones
+      - reservas
+      - usuarios-pagos
