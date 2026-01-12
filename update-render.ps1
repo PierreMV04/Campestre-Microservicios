@@ -1,7 +1,7 @@
-# Script para actualizar el c�digo en GitHub y triggear redespliegue en Render
+# Script para actualizar el código en GitHub y triggear redespliegue en Render
 
 Write-Host "========================================" -ForegroundColor Cyan
-Write-Host " ACTUALIZANDO C�DIGO EN GITHUB" -ForegroundColor Cyan
+Write-Host " ACTUALIZANDO CÓDIGO EN GITHUB" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 
@@ -10,22 +10,22 @@ Write-Host "[1/4] Agregando cambios..." -ForegroundColor Yellow
 git add .
 
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "? Error al agregar archivos" -ForegroundColor Red
+    Write-Host "❌ Error al agregar archivos" -ForegroundColor Red
     exit 1
 }
 
-Write-Host "? Cambios agregados" -ForegroundColor Green
+Write-Host "✅ Cambios agregados" -ForegroundColor Green
 Write-Host ""
 
 # 2. Commit
 Write-Host "[2/4] Creando commit..." -ForegroundColor Yellow
-$mensaje = "Fix: Actualizar requisitos JWT - Registro y FuncionesEspeciales p�blicos"
+$mensaje = "Fix: Corregir error de clave duplicada en fechas-ocupadas gRPC"
 git commit -m $mensaje
 
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "??  No hay cambios para commit o error" -ForegroundColor Yellow
+    Write-Host "⚠️  No hay cambios para commit o error" -ForegroundColor Yellow
 } else {
-    Write-Host "? Commit creado: $mensaje" -ForegroundColor Green
+    Write-Host "✅ Commit creado: $mensaje" -ForegroundColor Green
 }
 
 Write-Host ""
@@ -35,38 +35,42 @@ Write-Host "[3/4] Subiendo a GitHub..." -ForegroundColor Yellow
 git push
 
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "? Error al subir a GitHub" -ForegroundColor Red
-    Write-Host "Verifica tu conexi�n y autenticaci�n" -ForegroundColor Yellow
+    Write-Host "❌ Error al subir a GitHub" -ForegroundColor Red
+    Write-Host "Verifica tu conexión y autenticación" -ForegroundColor Yellow
     exit 1
 }
 
-Write-Host "? C�digo subido a GitHub" -ForegroundColor Green
+Write-Host "✅ Código subido a GitHub" -ForegroundColor Green
 Write-Host ""
 
-# 4. Informaci�n
+# 4. Información
 Write-Host "[4/4] Siguiente paso" -ForegroundColor Yellow
 Write-Host ""
-Write-Host "? Render detectar� el cambio autom�ticamente" -ForegroundColor Cyan
-Write-Host "? Espera 5-7 minutos mientras redesplega" -ForegroundColor Cyan
+Write-Host "✨ Render detectará el cambio automáticamente" -ForegroundColor Cyan
+Write-Host "⏳ Espera 5-7 minutos mientras redesplega" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "?? Monitorea el progreso en:" -ForegroundColor White
+Write-Host "📊 Monitorea el progreso en:" -ForegroundColor White
 Write-Host "   https://dashboard.render.com" -ForegroundColor Blue
 Write-Host ""
-Write-Host "?? Servicio que se redesplegar�:" -ForegroundColor White
-Write-Host "   - UsuariosPagosService" -ForegroundColor Yellow
+Write-Host "🔍 Servicio que se redesplegará:" -ForegroundColor White
+Write-Host "   - ApiGateway" -ForegroundColor Yellow
 Write-Host ""
-Write-Host "?? Cambios aplicados:" -ForegroundColor White
-Write-Host "   ? POST /api/Usuarios ahora es p�blico (registro)" -ForegroundColor Green
-Write-Host "   ? /api/funciones-especiales/* todos p�blicos" -ForegroundColor Green
-Write-Host "   ? /api/Pdfs/* todos p�blicos" -ForegroundColor Green
+Write-Host "📝 Cambio aplicado:" -ForegroundColor White
+Write-Host "   ✅ Corregida lógica de fechas-ocupadas" -ForegroundColor Green
+Write-Host "   ✅ Ahora maneja múltiples HabxRes por reserva" -ForegroundColor Green
+Write-Host "   ✅ Evita error: 'An item with the same key has already been added'" -ForegroundColor Green
 Write-Host ""
-Write-Host "?? Prueba sin JWT:" -ForegroundColor White
-Write-Host "   POST https://usuarios-pagos-service.onrender.com/api/Usuarios" -ForegroundColor Blue
-Write-Host "   POST https://usuarios-pagos-service.onrender.com/api/funciones-especiales/prereserva" -ForegroundColor Blue
+Write-Host "🧪 Después del redespliegue prueba:" -ForegroundColor White
+Write-Host "   GET /api/reservas-grpc/fechas-ocupadas/HAJO000001" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "?? Lee la documentaci�n actualizada:" -ForegroundColor White
-Write-Host "   LISTA_APIS_JWT_ACTUALIZADA.md" -ForegroundColor Blue
+Write-Host "✅ Respuesta esperada:" -ForegroundColor White
+Write-Host "   {" -ForegroundColor Gray
+Write-Host '     "success": true,' -ForegroundColor Gray
+Write-Host '     "idHabitacion": "HAJO000001",' -ForegroundColor Gray
+Write-Host '     "fechasOcupadas": ["2026-01-11", "2026-01-12", ...],' -ForegroundColor Gray
+Write-Host '     "totalFechas": 150' -ForegroundColor Gray
+Write-Host "   }" -ForegroundColor Gray
 Write-Host ""
 Write-Host "========================================" -ForegroundColor Cyan
-Write-Host " ? ACTUALIZACI�N COMPLETA" -ForegroundColor Green
+Write-Host " ✅ ACTUALIZACIÓN COMPLETA" -ForegroundColor Green
 Write-Host "========================================" -ForegroundColor Cyan

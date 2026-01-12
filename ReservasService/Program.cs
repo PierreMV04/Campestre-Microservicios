@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.IdentityModel.Tokens;
 using ReservasService.Services;
 using Shared.Data;
+using Shared.EventBus;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -28,7 +29,8 @@ builder.WebHost.ConfigureKestrel(options =>
 {
     options.ListenAnyIP(int.Parse(port), listenOptions =>
     {
-        listenOptions.Protocols = HttpProtocols.Http2;
+        // Usar Http1AndHttp2 para compatibilidad con Render (TLS termination)
+        listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
     });
 });
 
@@ -43,6 +45,7 @@ builder.Services.AddGrpc();
 // JWT Authentication
 // =======================
 var jwtKey = builder.Configuration["Jwt:Key"]
+             ?? builder.Configuration["JWT_SECRET_KEY"]
              ?? "HotelMicroservicesSecretKey2024!@#$%^&*()_+";
 var jwtIssuer = builder.Configuration["Jwt:Issuer"]
                 ?? "HotelMicroservices";
@@ -78,6 +81,35 @@ builder.Services.AddScoped<HoldRepository>();
 
 //
 // =======================
+// EVENT BUS (RABBITMQ OPCIONAL)
+// =======================
+builder.Services.AddSingleton<IEventBus>(sp =>
+{
+    var config = sp.GetRequiredService<IConfiguration>();
+    var logger = sp.GetRequiredService<ILoggerFactory>()
+                   .CreateLogger("EventBus");
+
+    var host = config["RabbitMQ:Host"];
+
+    if (string.IsNullOrWhiteSpace(host))
+    {
+        logger.LogWarning("RabbitMQ no configurado, usando NullEventBus");
+        return new NullEventBus();
+    }
+
+    try
+    {
+        return new RabbitMqEventBus(host);
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "RabbitMQ no disponible, usando NullEventBus");
+        return new NullEventBus();
+    }
+});
+
+//
+// =======================
 // HealthCheck (recomendado)
 // =======================
 builder.Services.AddHealthChecks();
@@ -91,11 +123,14 @@ var app = builder.Build();
 app.UseAuthentication();
 app.UseAuthorization();
 
+// Habilitar gRPC-Web para compatibilidad con proxies HTTP/1.1 (Render, Cloudflare, etc.)
+app.UseGrpcWeb();
+
 //
 // =======================
 // Endpoints
 // =======================
-app.MapGrpcService<ReservasGrpcService>();
+app.MapGrpcService<ReservasGrpcService>().EnableGrpcWeb();
 
 app.MapHealthChecks("/health");
 
